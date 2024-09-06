@@ -21,6 +21,7 @@
 
 namespace planning {
 
+// EudmPlanner 类继承了 Planner 类的所有公有（public）和保护（protected）成员,并可以访问 Planner 类的公有和保护成员，同时它也可以添加自己的成员
 class EudmPlanner : public Planner {
  public:
   using State = common::State;
@@ -67,6 +68,12 @@ class EudmPlanner : public Planner {
       return (efficiency.ave() + safety.ave() + navigation.ave()) * weight;
     }
 
+    // 这段代码定义了如何将 CostStructure 对象格式化并输出到标准流中，以便更方便地查看对象的状态
+    // 友元函数 (friend): 使 operator<< 函数可以访问 CostStructure 类的私有和保护成员。这通常用于实现类的自定义输出操作
+    // std::ostream& operator<<: 重载了 << 运算符，用于将 CostStructure 对象的内容输出到 std::ostream 对象（如 std::cout）
+    // os << std::fixed: 设置输出流 os 使用固定小数点表示法，而不是科学计数法。这里有重复的 os << std::fixed，可能是冗余的
+    // os << std::setprecision(3): 设置输出的浮点数的精度为小数点后三位
+    // const 表示在函数内部不能修改 cost 引用所指向的 CostStructure 对象的任何成员
     friend std::ostream& operator<<(std::ostream& os,
                                     const CostStructure& cost) {
       os << std::fixed;
@@ -82,17 +89,18 @@ class EudmPlanner : public Planner {
   };
 
   struct PredictedVehicle {
-    common::Vehicle vehicle;
+    common::Vehicle vehicle;  // common::Vehicle 应该是定义在 common 命名空间中的一个类或结构体，表示车辆的相关信息
+    // std::set 是 C++ 标准库中的一个关联容器，元素是唯一的，并且按照升序排列
+    // std::pair 是一个模板类，用于存储一对值
+    // 由于 std::set 按照元素的 < 运算符排序，std::pair 的比较是首先比较第一个值（decimal_t），如果第一个值相等，则比较第二个值（LateralBehavior）
     std::set<std::pair<decimal_t, LateralBehavior>> lat_intentions;
 
-    PredictedVehicle() {}
-    PredictedVehicle(
-        const common::Vehicle& vehicle_,
-        const std::set<std::pair<decimal_t, LateralBehavior>>& lat_intentions_)
-        : vehicle(vehicle_), lat_intentions(lat_intentions_) {}
+    PredictedVehicle() {} // PredictedVehicle 结构体的默认构造函数
+    PredictedVehicle(const common::Vehicle& vehicle_, const std::set<std::pair<decimal_t, LateralBehavior>>& lat_intentions_) // 带参数的构造函数，用于初始化 PredictedVehicle 对象的两个成员
+        : vehicle(vehicle_), lat_intentions(lat_intentions_) {} // 初始化列表用于在对象创建时初始化成员变量
   };
 
-  std::string Name() override;
+  std::string Name() override;  // 在实际使用中，这行代码通常出现在派生类中，该类继承自一个基类，并且基类中有一个虚函数 Name()，该虚函数在派生类中被重写以提供特定的实现
 
   ErrorType Init(const std::string config) override;
 
@@ -118,9 +126,11 @@ class EudmPlanner : public Planner {
 
   int winner_id() const;
 
-  std::vector<bool> sim_res() const {
+  std::vector<bool> sim_res() const // 函数声明后的 const 修饰符表示该函数不会修改类的任何成员变量。它保证函数 sim_res 在执行过程中不会改变类的状态
+  {
     std::vector<bool> ret;
-    for (auto& r : sim_res_) {
+    for (auto& r : sim_res_)  // 遍历 sim_res_ 中的每一个元素。auto& 表示 r 是 sim_res_ 中元素的引用，sim_res_ 应该是一个容器，如 std::vector<int>
+    {
       if (r == 0) {
         ret.push_back(false);
       } else {
@@ -169,6 +179,8 @@ class EudmPlanner : public Planner {
     return predicted_vehicles_;
   }
 
+  // const 在成员函数 cfg() 的末尾表示该函数不会修改对象的任何成员变量。换句话说，cfg() 是一个只读函数，它承诺不对类的状态进行任何更改
+  // const Cfg& 表示函数 cfg() 返回一个 Cfg 类型的常量引用
   const Cfg& cfg() const { return cfg_; }
 
   EudmPlannerMapItf* map_itf() const;
@@ -210,7 +222,7 @@ class EudmPlanner : public Planner {
   ErrorType SimulateActionSequence(
       const common::Vehicle& ego_vehicle,
       const std::unordered_map<int, PredictedVehicle>& predicted_vehicles,
-      const std::vector<BtAction>& action_seq, const int& seq_id);
+      const std::vector<BtAction>& action_seq, const int& seq_id);  // const 关键字表示 seq_id 是一个常量，它指向的 int 值不能被修改
 
   ErrorType SimulateScenario(
       const common::Vehicle& ego_vehicle,
@@ -240,7 +252,7 @@ class EudmPlanner : public Planner {
       const std::unordered_map<int, double>& est_desired_vel_set,
       const decimal_t& sim_time_resolution, const decimal_t& sim_time_total,
       vec_E<common::Vehicle>* traj,
-      std::unordered_map<int, vec_E<common::Vehicle>>* surround_trajs);
+      std::unordered_map<int, vec_E<common::Vehicle>>* surround_trajs); // std::unordered_map是 C++ 标准库中的一个关联容器哈希表
 
   // * evaluation functions
   ErrorType CostFunction(

@@ -704,7 +704,7 @@ ErrorType EudmManager::EvaluateReferenceVelocity(
     if (last_snapshot_.ref_lane.GetCurvatureByArcLength(s, &c, &cc) ==
         kSuccess) {
       v_max_by_curvature =
-          sqrt(bp_.cfg().sim().ego().lat().limit().acc() / fabs(c));
+          sqrt(bp_.cfg().sim().ego().lat().limit().acc() / fabs(c));  // 非常神奇的多层嵌套函数,需进一步探究
       v_ref = v_max_by_curvature < v_ref ? v_max_by_curvature : v_ref;
     }
   }
